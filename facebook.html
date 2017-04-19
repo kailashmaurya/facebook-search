@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <title>FB Search</title>
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <link rel="stylesheet" href="fbstyle.css">
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.6/angular-animate.min.js"></script>
+        <!--<script src="http://connect.facebook.net/en_US/all.js"></script>-->
+        <script src="FacebookController.js"></script>
+	</head>
+	<body ng-app="myApp">
+		<script>
+			window.fbAsyncInit = function() {
+				FB.init({
+				  appId      : 'facebook_app_id',
+				  xfbml      : true,
+				  version    : 'v2.8'
+				});
+				FB.AppEvents.logPageView();
+			  };
+			
+			  (function(d, s, id){
+				 var js, fjs = d.getElementsByTagName(s)[0];
+				 if (d.getElementById(id)) {return;}
+				 js = d.createElement(s); js.id = id;
+				 js.src = "//connect.facebook.net/en_US/sdk.js";
+				 fjs.parentNode.insertBefore(js, fjs);
+			   }(document, 'script', 'facebook-jssdk'));
+		</script>
+		<div class="container width100" ng-controller="GreetingController">
+        	<!--###############################    Search BAR       #################################-->
+            <div class="row lightgray_bkg">
+            	<div class="col-lg-3">
+                	<div class="header_padding">
+                    	<span class="fb_search">FB Search</span>
+	                </div>
+    	        </div><!-- /.col-lg-3 -->
+        	    <div class="col-lg-6">
+            	    <div class="input-group header_padding">
+                	  <input id="search_input" ng-model="query" type="text" class="search_size form-control remove_radius search_box_size height40" placeholder="type something..." data-trigger="manual" data-placement="bottom" title="Please type a keyword">
+	                  <span class="input-group-btn">
+            	          <button id="search_butt" ng-click="get_search_result(query)" class="btn btn-default remove_radius fb_blue_bkg search_button_width height40" type="button"><span class="glyphicon glyphicon-search white_color"></span></button>
+      		          </span>
+                  	  <span class="input-group-btn pad_left_20">
+	                      <button ng-click="clear(true)" class="btn btn-default remove_radius blue_color height40" type="button">Clear</button>
+      	              </span>
+          	        </div><!-- /input-group -->
+                </div><!-- /.col-lg-6 -->
+                <div class="col-lg-3"></div><!-- /.col-lg-3 -->
+            </div><!-- /.row -->
+           	<!--###############################    Navigation BAR       #################################-->
+            <div class="row">
+                <!-- Nav tabs -->
+                <ul class="nav nav-pills nav-justified" role="tablist">
+                    <li id="user_tab" role="presentation" class="active"><a id="user_anchor" href="#user" aria-controls="user" role="tab" data-toggle="pill">Users</a></li>
+                    <li id="page_tab" role="presentation"><a href="#page" aria-controls="page" role="tab" data-toggle="pill">Pages</a></li>
+                    <li id="event_tab" role="presentation"><a href="#event" aria-controls="event" role="tab" data-toggle="pill">Events</a></li>
+                    <li id="place_tab" role="presentation"><a href="#place" aria-controls="place" role="tab" data-toggle="pill">Places</a></li>
+                    <li id="group_tab" role="presentation"><a href="#group" aria-controls="group" role="tab" data-toggle="pill">Groups</a></li>
+                    <li id="fav_tab" role="presentation"><a href="#favorite" aria-controls="favorite" role="tab" data-toggle="pill">Favorites</a></li>
+                </ul> 
+            </div>
+           	<!--###############################    Results Section       #################################-->
+            <div id="table_content_div" class="row animate-hide-right" ng-hide="result_slide">
+                <!-- Tab panes -->
+            	<div class="tab-content">
+                    <div role="tabpanel" class="tab-pane active" id="user">
+                    	<div ng-if="users!==null" class="display_table">
+                            <table ng-model="users" class="table table-hover">
+                                <tr><th>#</th><th>Profile Photo</th><th>Name</th><th>Favorite</th><th>Details</th></tr>
+                                <tr ng-repeat="user in users.data">
+                                    <td><b>{{$index+1}}</b></td>
+                                    <td><img ng-src="{{user.picture.data.url}}" class="circle_image"></td>
+                                    <td>{{user.name}}</td>
+                                    <td><button ng-click="add_rem_from_fav(user,'users')" class="btn btn-default" type="button"><span ng-if="favIdList.indexOf(user.id)>-1" class="glyphicon glyphicon-star yellow"></span><span ng-if="favIdList.indexOf(user.id)==-1" class="glyphicon glyphicon-star-empty"></span></button></td>
+                                    <td><button ng-click="table_content_visible=false;detail_slide=false;get_details(user,'users');" class="btn btn-default" type="button"><span class="glyphicon glyphicon-chevron-right"></span></button></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div ng-if="users!==null" class="nextprev">
+                            <button ng-if="users.paging.previous" ng-click="get_page(users.paging.previous,'users')" class="btn btn-default height40 width80" type="button">Previous</button>
+                            <button ng-if="users.paging.next" ng-click="get_page(users.paging.next,'users')" class="btn btn-default height40 width80" type="button">Next</button>
+                        </div>
+                        <div ng-if="no_user_data" class="nodata"><p class="padding15">No data found.</p></div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="page">
+                    	<div ng-if="pages!==null" class="display_table">
+                            <table ng-model="pages" ng-if="pages!==null" class="table table-hover">
+                                <tr><th>#</th><th>Profile Photo</th><th>Name</th><th>Favorite</th><th>Details</th></tr>
+                                <tr ng-repeat="page in pages.data">
+                                    <td><b>{{$index+1}}</b></td>
+                                    <td><img ng-src="{{page.picture.data.url}}" class="circle_image"></td>
+                                    <td>{{page.name}}</td>
+                                    <td><button ng-click="add_rem_from_fav(page,'pages')" class="btn btn-default" type="button"><span ng-if="favIdList.indexOf(page.id)>-1" class="glyphicon glyphicon-star yellow"></span><span ng-if="favIdList.indexOf(page.id)==-1" class="glyphicon glyphicon-star-empty"></span></button></td>
+                                    <td><button ng-click="table_content_visible=false;detail_slide=false;get_details(page,'pages');" class="btn btn-default" type="button"><span class="glyphicon glyphicon-chevron-right"></span></button></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div ng-if="pages!==null" class="nextprev">
+                            <button ng-if="pages.paging.previous" ng-click="get_page(pages.paging.previous,'pages')" class="btn btn-default height40 width80" type="button">Previous</button>
+                            <button ng-if="pages.paging.next" ng-click="get_page(pages.paging.next,'pages')" class="btn btn-default height40 width80" type="button">Next</button>
+                        </div>
+                        <div ng-if="no_page_data" class="nodata"><p class="padding15">No data found.</p></div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="event">
+                    	<div ng-if="events!==null" class="display_table">
+                            <table ng-model="events" ng-if="events!==null" class="table table-hover">
+                                <tr><th>#</th><th>Profile Photo</th><th>Name</th><th>Favorite</th><th>Details</th></tr>
+                                <tr ng-repeat="event in events.data">
+                                    <td><b>{{$index+1}}</b></td>
+                                    <td><img ng-src="{{event.picture.data.url}}" class="circle_image"></td>
+                                    <td>{{event.name}}</td>
+                                    <td><button ng-click="add_rem_from_fav(event,'events')" class="btn btn-default" type="button"><span ng-if="favIdList.indexOf(event.id)>-1" class="glyphicon glyphicon-star yellow"></span><span ng-if="favIdList.indexOf(event.id)==-1" class="glyphicon glyphicon-star-empty"></span></button></td>
+                                    <td><button ng-click="table_content_visible=false;detail_slide=false;get_details(event,'events');" class="btn btn-default" type="button"><span class="glyphicon glyphicon-chevron-right"></span></button></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div ng-if="events!==null" class="nextprev">
+                            <button ng-if="events.paging.previous" ng-click="get_page(events.paging.previous,'events')" class="btn btn-default height40 width80" type="button">Previous</button>
+                            <button ng-if="events.paging.next" ng-click="get_page(events.paging.next,'events')" class="btn btn-default height40 width80" type="button">Next</button>
+                        </div>
+                        <div ng-if="no_event_data" class="nodata"><p class="padding15">No data found.</p></div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="place">
+                    	<div ng-if="places!==null" class="display_table">
+                            <table ng-model="places" ng-if="places!==null" class="table table-hover">
+                                <tr><th>#</th><th>Profile Photo</th><th>Name</th><th>Favorite</th><th>Details</th></tr>
+                                <tr ng-repeat="place in places.data">
+                                    <td><b>{{$index+1}}</b></td>
+                                    <td><img ng-src="{{place.picture.data.url}}" class="circle_image"></td>
+                                    <td>{{place.name}}</td>
+                                    <td><button ng-click="add_rem_from_fav(place,'places')" class="btn btn-default" type="button"><span ng-if="favIdList.indexOf(place.id)>-1" class="glyphicon glyphicon-star yellow"></span><span ng-if="favIdList.indexOf(place.id)==-1" class="glyphicon glyphicon-star-empty"></span></button></td>
+                                    <td><button ng-click="table_content_visible=false;detail_slide=false;get_details(place,'places');" class="btn btn-default" type="button"><span class="glyphicon glyphicon-chevron-right"></span></button></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div ng-if="places!==null" class="nextprev">
+                            <button ng-if="places.paging.previous" ng-click="get_page(places.paging.previous,'places')" class="btn btn-default height40 width80" type="button">Previous</button>
+                            <button ng-if="places.paging.next" ng-click="get_page(places.paging.next,'places')" class="btn btn-default height40 width80" type="button">Next</button>
+                        </div>
+                        <div ng-if="no_place_data" class="nodata"><p class="padding15">No data found.</p></div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="group">
+                    	<div ng-if="groups!==null" class="display_table">
+                            <table ng-model="groups" ng-if="groups!==null" class="table table-hover">
+                                <tr><th>#</th><th>Profile Photo</th><th>Name</th><th>Favorite</th><th>Details</th></tr>
+                                <tr ng-repeat="group in groups.data">
+                                    <td><b>{{$index+1}}</b></td>
+                                    <td><img ng-src="{{group.picture.data.url}}" class="circle_image"></td>
+                                    <td>{{group.name}}</td>
+                                    <td><button ng-click="add_rem_from_fav(group,'groups')" class="btn btn-default" type="button"><span ng-if="favIdList.indexOf(group.id)>-1" class="glyphicon glyphicon-star yellow"></span><span ng-if="favIdList.indexOf(group.id)==-1" class="glyphicon glyphicon-star-empty"></span></button></td>
+                                    <td><button ng-click="table_content_visible=false;detail_slide=false;get_details(group,'groups');" class="btn btn-default" type="button"><span class="glyphicon glyphicon-chevron-right"></span></button></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div ng-if="groups!==null" class="nextprev">
+                            <button ng-if="groups.paging.previous" ng-click="get_page(groups.paging.previous,'groups')" class="btn btn-default height40 width80" type="button">Previous</button>
+                            <button ng-if="groups.paging.next" ng-click="get_page(groups.paging.next,'groups')" class="btn btn-default height40 width80" type="button">Next</button>
+                        </div>
+                        <div ng-if="no_group_data" class="nodata"><p class="padding15">No data found.</p></div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="favorite">
+                    	<div ng-if="favIdList.length!=0" class="display_table">
+                            <table ng-model="favObjList" ng-if="favIdList.length!=0" class="table table-hover">
+                                <tr><th>#</th><th>Profile Photo</th><th>Name</th><th>Type</th><th>Favorite</th><th>Details</th></tr>
+                                <tr ng-repeat="fav in favObjList">
+                                    <td><b>{{$index+1}}</b></td>
+                                    <td><img ng-src="{{fav.picture.data.url}}" class="circle_image"></td>
+                                    <td>{{fav.name}}</td>
+                                    <td>{{fav.type}}</td>
+                                    <td><button ng-click="add_rem_from_fav(fav)" class="btn btn-default" type="button"><span class="glyphicon glyphicon-trash"></span></button></td>
+                                    <td><button ng-click="table_content_visible=false;detail_slide=false;get_details(fav,fav.type);" class="btn btn-default" type="button"><span class="glyphicon glyphicon-chevron-right"></span></button></td>
+                                </tr>
+                            </table>
+	                    </div>
+                        <div ng-if="favIdList.length==0" class="nodata"><p class="padding15">You have no favorites.</p></div>
+                    </div>
+                </div>
+                <div ng-if="progress" class="progress progress_customize">
+                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 45%"></div>
+                </div>
+            </div>
+        	<!--###############################    DETAILS SECTION       #################################-->
+            <div id="detail_content" class="row animate-hide"  ng-hide="detail_slide">
+				<div class="padding15">
+	            	<div class="displayinline"><button ng-click="result_slide=false;back_to_table();" class="btn btn-default height40 width80" type="button"><span class="glyphicon glyphicon-chevron-left"></span>Back</button></div>
+      	          	<div class="displayinline right">
+                    	<div class="displayinline marginright"><button ng-click="add_rem_from_fav(detail_obj,detail_type)" class="btn btn-default" type="button"><span ng-if="favIdList.indexOf(detail_obj.id)>-1" class="glyphicon glyphicon-star yellow"></span><span ng-if="favIdList.indexOf(detail_obj.id)==-1" class="glyphicon glyphicon-star-empty"></span></button></div>
+       	          		<div class="displayinline"><button ng-click="share_to_facebook(detail_obj)" class="btn btn-default" type="button"><img ng-src="http://cs-server.usc.edu:45678/hw/hw8/images/facebook.png" width="18"></button></div>
+                    </div>
+                </div>
+                <div>
+					<div class="col-lg-6">
+                        <div class="panel-group">
+                        	<div class="panel panel-default">
+                            	<div class="panel-heading">
+									<h4 class="panel-title">Albums</h4>
+	                            </div>
+                            	<div class="panel-collapse collapse in">
+                                	<div class="panel-body">
+        		            	    	<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                                        	<div ng-if="progress_detail" class="progress progress_customize">
+                    							<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 45%"></div>
+							                </div>
+   	                                    	<div ng-if="no_album_data" class="nodata"><p class="padding15">No data found.</p></div>
+                                            <div ng-repeat="album in details.albums.data" class="panel panel-default">
+                                                <div class="panel-heading" role="tab" id="{{album.id+'a'}}">
+                                                    <h4 class="panel-title">
+                                                        <a ng-if="$index==0" role="button" data-toggle="collapse" data-parent="#accordion" href="#{{album.id}}" aria-expanded="true" aria-controls="{{album.id}}">{{album.name}}</a>
+                                                        <a ng-if="$index!==0" class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#{{album.id}}" aria-expanded="false" aria-controls="{{album.id}}">{{album.name}}</a>
+                                                    </h4>
+                                                </div>
+                                                <div ng-if="$index==0" id="{{album.id}}" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="{{album.id+'a'}}">
+                                                    <div class="panel-body">
+                                                    	<img ng-src="https://graph.facebook.com/v2.8/{{album.photos.data[0].id}}/picture?access_token={{FACEBOOK_ACCESS}}" class="width100 radius10 marginbottom">
+                                                    	<img ng-src="https://graph.facebook.com/v2.8/{{album.photos.data[1].id}}/picture?access_token={{FACEBOOK_ACCESS}}" class="width100 radius10">
+                                                        <div ng-if="!album.hasOwnProperty('photos')" class="nodata"><p class="padding15">No photos found.</p></div>
+                                                    </div>
+                                                </div>
+                                                <div ng-if="$index!==0" id="{{album.id}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="{{album.id+'a'}}">
+                                                    <div class="panel-body">
+                                                    	<img ng-src="https://graph.facebook.com/v2.8/{{album.photos.data[0].id}}/picture?access_token={{FACEBOOK_ACCESS}}" class="width100 radius10 marginbottom">
+                                                    	<img ng-src="https://graph.facebook.com/v2.8/{{album.photos.data[1].id}}/picture?access_token={{FACEBOOK_ACCESS}}" class="width100 radius10">
+                                                        <div ng-if="!album.hasOwnProperty('photos')" class="nodata"><p class="padding15">No photos found.</p></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+		                        		</div>
+			                        </div>
+    	                        </div>
+                            </div>
+                        </div>
+                    </div>
+					<div class="col-lg-6">
+                        <div class="panel-group">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">Posts</h4>
+	                            </div>
+                            	<div class="panel-collapse collapse in">
+                              		<div class="panel-body">
+                                       	<div ng-if="progress_detail" class="progress progress_customize">
+                    						<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 45%"></div>
+							            </div>
+                                    	<div ng-if="no_post_data" class="nodata"><p class="padding15">No data found.</p></div>
+                              			<div ng-repeat="post in details.posts.data" class="grayborder radius5 marginbottom">
+                                        	<div>
+                                            	<div class="displayinline margin10"><img ng-src="{{details.picture.data.url}}" width="50"></div>
+                                                <div class="displayinline verticlemiddle">
+                                                	<div><b>{{details.name}}</b></div>
+                                                	<div>{{post.created_time.split("T")[0]}}&nbsp;{{post.created_time.split("T")[1].substr(0,post.created_time.split("T")[1].length-5)}}</div>
+                                                </div>
+                                            </div>
+                                            <div ng-if="post.hasOwnProperty('message')" class="margin10">
+                                            	{{post.message}}
+                                            </div>
+                                            <div ng-if="!post.hasOwnProperty('message')" class="margin10">
+                                            	{{post.story}}
+                                            </div>
+                                        </div>
+                              		</div>
+                            	</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+		</div>
+	</body>
+</html>
